@@ -1,0 +1,737 @@
+<%@ Master Language="C#" AutoEventWireup="true" CodeFile="MasterPage.master.cs"
+    Inherits="MasterPage" %>
+
+<%@ Register TagPrefix="uc1" TagName="UCMasterPageFooter" Src="MasterFooter.ascx" %>
+<%@ Register TagPrefix="Item" Namespace="ManagementSuite.Web.UI.Controls" Assembly="ManagementSuite.Web" %>
+<%@ Register TagPrefix="Bootstrap" TagName="Menu" Src="/Core/Item/Menu/BootstrapMenu.ascx" %>
+<% if (PUP.IsMode("m"))
+    { // Allows mobile device to use narrow browser width. %>
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//WAPFORUM//DTD XHTML Mobile 1.0//EN" "http://www.wapforum.org/DTD/xhtml-mobile10.dtd">
+<% }
+    else
+    { %>
+<!DOCTYPE html>
+<% } %>
+<html class="no-js" lang="en">
+<head runat="server">
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta http-equiv="x-ua-compatible" content="IE=edge" />
+    <meta name="description" content="With more than 90,000 acres of protected lands stretching from the Blue Ridge Mountains to the sand dunes of the Atlantic Ocean, South Carolina state parks protect some of the most inviting natural, cultural and recreational destinations in the country." />
+    <meta property="og:image" content="https://southcarolinaparks.com/images/og/south-carolina-parks.jpg" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <title>South Carolina Parks | South Carolina Parks Official Site</title>
+    <link type="image/ico" href="/scparks/favicon.ico" rel="shortcut icon" />
+
+    <!-- Core styles (shared with all sites) -->
+    <link type="text/css" rel="stylesheet" href="/core/css/materialicons/icon.css" />
+    <link type="text/css" rel="stylesheet" href="/core/css/default.css" />
+
+    <!-- South Carolina Parks styles, from the southcarolinaparks.com inline style block (fonts and header/footer images served from /scparks/) -->
+    <%-- href set in code-behind with a file-date version (no code blocks allowed in head: controls get added to it) --%>
+    <link id="ScParksCssLink" runat="server" type="text/css" rel="stylesheet" href="/scparks/css/scparks.css" />
+
+    <style>
+        /* The "+" expanders on Camping & Lodging, See & Do and Education & History load their submenus from
+           southcarolinaparks.com's /api/menu/, which currently returns an empty list (the live site opens an
+           empty panel with only a "SEE FULL PAGE" link). Hide them; each top-level link goes to its section page. */
+        header #main-nav li:not(.parks-menu-item) .menu-expand {
+            display: none !important;
+        }
+
+        /* Parks dropdown (narrow widths): the source site only renders this list while open. */
+        header .parks-menu-item:not(.park-finder-menu-item-active) .parks-dropdown {
+            display: none;
+        }
+
+        /* /core/css/default.css has a generic .box rule (padding:10px; border) that the SC header's social
+           icon markup (.box.icons, .box.icon, .box.share) also matches. SC's own CSS sets neither. */
+        .sticky-header .box {
+            padding: 0;
+            border: 0;
+        }
+
+        /* Account/admin menu (BootstrapMenu.ascx) placed over the right end of the green utility bar */
+        .sc-account-nav {
+            position: absolute;
+            top: 0;
+            right: 0;
+            height: 45px;
+            display: flex;
+            align-items: center;
+            padding-right: 8px;
+            z-index: 10000;
+        }
+
+            .sc-account-nav #globalNav {
+                margin: 0;
+                padding: 0;
+                height: auto;
+                line-height: normal;
+                width: auto;
+            }
+
+            /* BootstrapMenu reserves 125px inline and floats its icon groups right; in this shrink-to-fit box the
+               floats wrap vertically, so lay them out as a row instead. row-reverse keeps the float-right order
+               (first group, the gear, rightmost). */
+            .sc-account-nav .nav-collapse {
+                min-width: 0 !important;
+                float: none !important;
+                display: flex !important;
+                flex-direction: row-reverse;
+                align-items: center;
+            }
+
+                .sc-account-nav .nav-collapse > ul.nav {
+                    float: none !important;
+                    margin: 0;
+                }
+
+            .sc-account-nav .navbar {
+                margin: 0;
+                min-height: 0;
+                border: 0;
+                background: transparent;
+            }
+
+            /* BootstrapMenu gives .navbar-inner a 10px top margin, and an inline icon with a 30px line-height
+               adds space below the glyph. Both pushed the icons ~4px below the social icons' center line. */
+            .sc-account-nav .navbar-inner {
+                margin: 0;
+            }
+
+            .sc-account-nav .button-topbar {
+                display: block;
+                color: #485b24;
+                font-size: 26px;
+                line-height: 26px;
+                height: 26px;
+                padding: 0 3px;
+                cursor: pointer;
+            }
+
+                .sc-account-nav .button-topbar:hover {
+                    color: #fff;
+                }
+
+            .sc-account-nav .dropdown-menu {
+                text-align: left;
+            }
+
+        @media (min-width: 992px) {
+            #utility-nav {
+                padding-right: 80px; /* room for .sc-account-nav */
+            }
+        }
+
+        @media (max-width: 991px) {
+            .sticky-header {
+                position: relative; /* fixed (positioned) at 992px+ in scparks.css */
+            }
+
+            .sc-account-nav {
+                right: 4px; /* right of the hamburger button */
+                height: 60px;
+            }
+
+                .sc-account-nav .button-topbar {
+                    color: #fff;
+                }
+        }
+
+        /* Page body. SC's .content rule (centered text, 1500px cap, paper background, top margin for the
+           fixed header) applies to the master's <main> only, not to .content elements inside pages. */
+        main.content {
+            text-align: left;
+        }
+
+        main.content .main-container {
+            padding-top: 20px;
+            padding-bottom: 30px;
+        }
+
+        /* Page text matches SC's link color (a{color:#9e5700} in scparks.css). Without this, text in plain
+           divs and headings falls back to Bootstrap's body #333, p/ul/li/span use SC's #916f46, and page/item
+           titles use /core/css/default.css .itemtitle #656544, .pagetitle #545454 and .sectionbar #585846.
+           Table cells and the labels inside them use scparks.css table,td #916f46.
+           Buttons and form fields keep their own colors. .extraLinks is the staff-only "Static Page | Dynamic"
+           bar below the content, whose "|" separators are plain text in a default.css .mainBox (#555). */
+        main.content .main-container,
+        main.content .main-container p,
+        main.content .main-container ul,
+        main.content .main-container li,
+        main.content .main-container span,
+        main.content .main-container table,
+        main.content .main-container td,
+        main.content .main-container th,
+        main.content .main-container label,
+        main.content .main-container .itemtitle,
+        main.content .main-container .pagetitle,
+        main.content .main-container .sectionbar,
+        main.content .extraLinks {
+            color: #9e5700;
+        }
+
+        /* default.css .sectionbar underline is gray (#777). */
+        main.content .main-container .sectionbar {
+            border-bottom-color: #9e5700;
+        }
+
+        /* Filled section bar with an inline gray background and white text, e.g. the staff-only "Assignment"
+           bar on /location/request/app.aspx. */
+        main.content .main-container .sectionbar[style*="#757575"] {
+            background-color: #9e5700 !important;
+        }
+
+            main.content .main-container .sectionbar[style*="#757575"] span {
+                color: #fff;
+            }
+
+        /* Gray dividers in brown tints of the text color, so they stay subtle on the paper background:
+           default.css .line row separators (#ddd), scparks.css hr (#eee), and boxes with an inline
+           "border:1px solid #aaa" or "#ccc", such as the Payment History / Approved Assignments box on
+           /location/request/detail.aspx and the Assignment box on app.aspx (inline style, hence !important). */
+        main.content .main-container .line {
+            background-color: rgba(158, 87, 0, .25);
+        }
+
+        main.content .main-container hr {
+            border-top-color: rgba(158, 87, 0, .25);
+        }
+
+        main.content .main-container div[style*="solid #aaa"],
+        main.content .main-container div[style*="solid #ccc"],
+        main.content .main-container td[style*="solid #aaa"] {
+            border-color: rgba(158, 87, 0, .5) !important;
+        }
+
+        /* 2px divider tables on the host timeline (/volunteer/hosts) with an inline #CCCCCC background. */
+        main.content .main-container table[style*="background:#CCCCCC"] {
+            background: rgba(158, 87, 0, .5) !important;
+        }
+
+        /* 1px row separators on /location/request/list.aspx are table cells with an inline #777 background. */
+        main.content .main-container td[style*="background-color:#777"] {
+            background-color: rgba(158, 87, 0, .5) !important;
+        }
+
+        /* Gray/blue panel and row backgrounds from /location/request/list.aspx's own <style> block, in light
+           brown tints: the filter panel (#eee) and the rows for applicants pending at the selected park
+           (#eef/#eaeaff/#e6e6ff, kept light to dark). */
+        main.content .main-container .listSearchBox {
+            background-color: rgba(158, 87, 0, .08);
+        }
+
+        main.content .main-container .pendingAtLocTop {
+            background-color: rgba(158, 87, 0, .06);
+        }
+
+        main.content .main-container .pendingAtLoc {
+            background-color: rgba(158, 87, 0, .08);
+        }
+
+        main.content .main-container .pendingAtLocBottom {
+            background-color: rgba(158, 87, 0, .10);
+        }
+
+        /* Host timeline (/volunteer/hosts, Location/Request/HostTimeline.aspx) styles from its own <style>
+           block: the search panel (#dfdfdf), its "pending within..." box (#ddd header, #333 row lines, #eef
+           rows for the selected park), the park title bar (#555, white text) and the "Add Opening" footer
+           bar (#ccc). */
+        main.content .main-container .searchCriteriaBox {
+            background-color: rgba(158, 87, 0, .08);
+        }
+
+        main.content .main-container .recentPendingHeaderCell {
+            background: rgba(158, 87, 0, .10);
+        }
+
+        main.content .main-container .recentPendingRowCell {
+            border-bottom-color: rgba(158, 87, 0, .5);
+        }
+
+        main.content .main-container .recentPendingRowCell-primary {
+            background: rgba(158, 87, 0, .08);
+        }
+
+        main.content .main-container .orgHeaderBar {
+            background: #9e5700;
+        }
+
+        main.content .main-container .orgFooterBar {
+            background: rgba(158, 87, 0, .15);
+        }
+
+        /* Outlined "edit"/"apply" buttons (default.css .textbutton): blue link text and an olive-gray border,
+           with a gray hover. The host timeline's own <style> block sets the blue text and the gray hover
+           with !important, hence !important here. */
+        main.content .main-container .textbutton {
+            color: #9e5700 !important;
+            border-color: rgba(158, 87, 0, .5);
+        }
+
+            main.content .main-container .textbutton:hover {
+                color: #9e5700 !important;
+                border-color: #9e5700;
+                background-color: rgba(158, 87, 0, .12) !important;
+            }
+
+        /* Form controls: scparks.css makes inputs and selects inherit the text color but not textareas,
+           which stay browser-default black. accent-color turns checked checkboxes and radio buttons from
+           the browser's default blue to the text color. */
+        main.content .main-container textarea {
+            color: inherit;
+        }
+
+        main.content .main-container input[type="checkbox"],
+        main.content .main-container input[type="radio"] {
+            accent-color: #9e5700;
+        }
+
+        /* Many core, Net and Location/Request pages hard-code <img src="/core/img/arrows/rect-blue.gif">,
+           rect-green.gif or rect-olive.gif as a link bullet. On SC pages, swap them for rect-brown.gif, the
+           same arrow in the text/link color (#9e5700), instead of editing each page. */
+        img[src$="/core/img/arrows/rect-blue.gif"],
+        img[src$="/core/img/arrows/rect-green.gif"],
+        img[src$="/core/img/arrows/rect-olive.gif"] {
+            content: url(/core/img/arrows/rect-brown.gif);
+        }
+
+        main.content .main-container .content {
+            width: auto;
+            max-width: inherit;
+            margin: inherit;
+            text-align: inherit;
+            background-image: none;
+        }
+
+        .contentpadding {
+            padding-top: inherit;
+            padding-left: inherit;
+            padding-right: inherit;
+            padding-bottom: inherit;
+        }
+
+        label {
+            font-weight: normal;
+            display: inline;
+        }
+
+        input[type="radio"], input[type="checkbox"] {
+            margin: 4px 3px 0;
+        }
+
+        /* Skip link: hidden until focused by keyboard */
+        #skipLink {
+            position: absolute;
+            left: -10000px;
+            top: 0;
+            z-index: 10001;
+            padding: 6px 12px;
+            background: #fff;
+        }
+
+            #skipLink:focus {
+                left: 0;
+            }
+
+        /* Simple logo-only header for a/e/p modes (admin, email, print) */
+        .sc-simple-header {
+            padding: 10px 15px;
+            background-color: #485b24;
+        }
+
+            .sc-simple-header img {
+                max-height: 70px;
+            }
+    </style>
+    <asp:ContentPlaceHolder ID="HeadContent" runat="server">
+    </asp:ContentPlaceHolder>
+    <asp:PlaceHolder ID="StyleOverridePH" runat="server"></asp:PlaceHolder>
+    <!-- [HEADHOOK] -->
+</head>
+<body>
+    <% if (!PUP.IsMode("aep"))
+        { %>
+    <div id="skip-link" role="navigation" aria-labelledby="skipLink">
+        <a href="#main-content" id="skipLink">Skip to main content</a>
+    </div>
+
+    <!-- Begin Header (from https://southcarolinaparks.com/) -->
+    <div class="sticky-header no-print">
+        <header>
+            <div>
+                <div>
+                    <nav class="navbar navbar-default navbar-static-top">
+                        <div class="container top-navbar-container">
+                            <div class="navbar-header">
+                                <button type="button" aria-label="Search" class="search-button search-button-mobile"><i class="fa fa-search"></i></button>
+                                <a href="https://southcarolinaparks.com/"><img src="/scparks/images/scp-mobile-logo.svg" alt="Come out and play" class="img-responsive mobile-image"></a>
+                                <button type="button" id="no-hover-navbar" aria-label="SCP Navbar Collapse" aria-controls="header-collapse" aria-expanded="false" class="navbar-toggle"><span class="icon-bar"></span><span class="icon-bar"></span><span class="icon-bar"></span></button>
+                            </div>
+                            <div id="header-collapse" class="navbar-collapse collapse">
+                                <div class="navbar-container">
+                                    <a href="https://southcarolinaparks.com/" aria-label="Home" class="header-logo-link">
+                                        <div id="homepage-image" class="nav navbar-nav"><img src="/scparks/images/south-carolina-parks-logo.png" alt="Come out and play"></div>
+                                    </a>
+                                    <div class="navbar-section">
+                                        <ul id="main-nav" class="nav navbar-nav">
+                                            <li class="park-finder-li park-finder-menu-item"><a href="https://southcarolinaparks.com/park-finder">Park Finder</a></li>
+                                            <%-- Parks dropdown: the list below shows under 992px wide; at 992px+ the panel in #park-finder-cta-component
+                                                 (end of the header) shows instead. Both are toggled by scripts/header.js. The park list is hard-coded,
+                                                 as it is in southcarolinaparks.com's own header script. --%>
+                                            <li class=" parks-menu-item">
+                                                <div style="cursor: pointer;" class="sc-parks-toggle" role="button" tabindex="0" aria-expanded="false" aria-controls="park-finder-cta-component"><span class="header__parks-dropdown-title">Parks</span><span class="menu-expand menu-expand-first">+</span><img src="/scparks/images/park-listing.png" alt="Park finder dropdown" class="img-responsive">
+                                                <div class="parks-dropdown">
+                                                    <a href="https://southcarolinaparks.com/aiken" class="park-link-dropdown">Aiken State Park</a>
+                                                    <a href="https://southcarolinaparks.com/andrew-jackson" class="park-link-dropdown">Andrew Jackson State Park</a>
+                                                    <a href="https://southcarolinaparks.com/baker-creek" class="park-link-dropdown">Baker Creek State Park</a>
+                                                    <a href="https://southcarolinaparks.com/barnwell" class="park-link-dropdown">Barnwell State Park</a>
+                                                    <a href="https://southcarolinaparks.com/musgrove-mill" class="park-link-dropdown">Battle of Musgrove Mill State Historic Site</a>
+                                                    <a href="https://southcarolinaparks.com/rivers-bridge" class="park-link-dropdown">Battle of Rivers Bridge State Historic Site</a>
+                                                    <a href="https://southcarolinaparks.com/black-river" class="park-link-dropdown">Black River State Park</a>
+                                                    <a href="https://southcarolinaparks.com/caesars-head" class="park-link-dropdown">Caesars Head State Park</a>
+                                                    <a href="https://southcarolinaparks.com/calhoun-falls" class="park-link-dropdown">Calhoun Falls State Park</a>
+                                                    <a href="https://southcarolinaparks.com/charles-towne-landing" class="park-link-dropdown">Charles Towne Landing State Historic Site</a>
+                                                    <a href="https://southcarolinaparks.com/cheraw" class="park-link-dropdown">Cheraw State Park</a>
+                                                    <a href="https://southcarolinaparks.com/chester" class="park-link-dropdown">Chester State Park</a>
+                                                    <a href="https://southcarolinaparks.com/colleton" class="park-link-dropdown">Colleton State Park</a>
+                                                    <a href="https://southcarolinaparks.com/colonial-dorchester" class="park-link-dropdown">Colonial Dorchester State Historic Site</a>
+                                                    <a href="https://southcarolinaparks.com/croft" class="park-link-dropdown">Croft State Park</a>
+                                                    <a href="https://southcarolinaparks.com/devils-fork" class="park-link-dropdown">Devils Fork State Park</a>
+                                                    <a href="https://southcarolinaparks.com/dreher-island" class="park-link-dropdown">Dreher Island State Park</a>
+                                                    <a href="https://southcarolinaparks.com/edisto-beach" class="park-link-dropdown">Edisto Beach State Park</a>
+                                                    <a href="https://southcarolinaparks.com/givhans-ferry" class="park-link-dropdown">Givhans Ferry State Park</a>
+                                                    <a href="https://southcarolinaparks.com/goodale" class="park-link-dropdown">Goodale State Park</a>
+                                                    <a href="https://southcarolinaparks.com/h-cooper-black" class="park-link-dropdown">H. Cooper Black Jr. Memorial Field Trial and Recreation Area</a>
+                                                    <a href="https://southcarolinaparks.com/hamilton-branch" class="park-link-dropdown">Hamilton Branch State Park</a>
+                                                    <a href="https://southcarolinaparks.com/hampton" class="park-link-dropdown">Hampton Plantation State Historic Site</a>
+                                                    <a href="https://southcarolinaparks.com/hickory-knob" class="park-link-dropdown">Hickory Knob State Resort Park</a>
+                                                    <a href="https://southcarolinaparks.com/hunting-island" class="park-link-dropdown">Hunting Island State Park</a>
+                                                    <a href="https://southcarolinaparks.com/huntington-beach" class="park-link-dropdown">Huntington Beach State Park</a>
+                                                    <a href="https://southcarolinaparks.com/jones-gap" class="park-link-dropdown">Jones Gap State Park</a>
+                                                    <a href="https://southcarolinaparks.com/keowee-toxaway" class="park-link-dropdown">Keowee-Toxaway State Park</a>
+                                                    <a href="https://southcarolinaparks.com/kings-mountain" class="park-link-dropdown">Kings Mountain State Park</a>
+                                                    <a href="https://southcarolinaparks.com/lake-greenwood" class="park-link-dropdown">Lake Greenwood State Park</a>
+                                                    <a href="https://southcarolinaparks.com/lake-hartwell" class="park-link-dropdown">Lake Hartwell State Park</a>
+                                                    <a href="https://southcarolinaparks.com/lake-warren" class="park-link-dropdown">Lake Warren State Park</a>
+                                                    <a href="https://southcarolinaparks.com/lake-wateree" class="park-link-dropdown">Lake Wateree State Park</a>
+                                                    <a href="https://southcarolinaparks.com/landsford-canal" class="park-link-dropdown">Landsford Canal State Park</a>
+                                                    <a href="https://southcarolinaparks.com/lee" class="park-link-dropdown">Lee State Park</a>
+                                                    <a href="https://southcarolinaparks.com/little-pee-dee" class="park-link-dropdown">Little Pee Dee State Park</a>
+                                                    <a href="https://southcarolinaparks.com/may-forest" class="park-link-dropdown">May Forest State Park</a>
+                                                    <a href="https://southcarolinaparks.com/myrtle-beach" class="park-link-dropdown">Myrtle Beach State Park</a>
+                                                    <a href="https://southcarolinaparks.com/oconee" class="park-link-dropdown">Oconee State Park</a>
+                                                    <a href="https://southcarolinaparks.com/oconee-station" class="park-link-dropdown">Oconee Station State Historic Site</a>
+                                                    <a href="https://southcarolinaparks.com/paris-mountain" class="park-link-dropdown">Paris Mountain State Park</a>
+                                                    <a href="https://southcarolinaparks.com/pine-island" class="park-link-dropdown">Pine Island State Park</a>
+                                                    <a href="https://southcarolinaparks.com/poinsett" class="park-link-dropdown">Poinsett State Park</a>
+                                                    <a href="https://southcarolinaparks.com/ramsey-grove" class="park-link-dropdown">Ramsey Grove State Park</a>
+                                                    <a href="https://southcarolinaparks.com/redcliffe" class="park-link-dropdown">Redcliffe Plantation State Historic Site</a>
+                                                    <a href="https://southcarolinaparks.com/rose-hill" class="park-link-dropdown">Rose Hill Plantation State Historic Site</a>
+                                                    <a href="https://southcarolinaparks.com/sadlers-creek" class="park-link-dropdown">Sadlers Creek State Park</a>
+                                                    <a href="https://southcarolinaparks.com/santee" class="park-link-dropdown">Santee State Park</a>
+                                                    <a href="https://southcarolinaparks.com/sesqui" class="park-link-dropdown">Sesquicentennial State Park</a>
+                                                    <a href="https://southcarolinaparks.com/st-phillips-island" class="park-link-dropdown">St. Phillips Island</a>
+                                                    <a href="https://southcarolinaparks.com/table-rock" class="park-link-dropdown">Table Rock State Park</a>
+                                                    <a href="https://southcarolinaparks.com/woods-bay" class="park-link-dropdown">Woods Bay State Park</a>
+                                                </div></div>
+                                            </li>
+                                            <li class="camping-and-lodging-menu-item"><a href="https://southcarolinaparks.com/camping-and-lodging">Camping &amp; Lodging</a><span class="menu-expand menu-expand-first">+</span></li>
+                                            <li class="see-and-do-menu-item"><a href="https://southcarolinaparks.com/see-and-do">See &amp; Do</a><span class="menu-expand menu-expand-first">+</span></li>
+                                            <li class="education-and-history-menu-item"><a href="https://southcarolinaparks.com/education-and-history">Education &amp; History</a><span class="menu-expand menu-expand-first">+</span></li>
+                                            <li class=" mission-and-stories-menu-item"><a href="https://southcarolinaparks.com/mission-and-stories">Mission &amp; Stories</a></li>
+                                            <li class=" programs-and-events-menu-item"><a href="https://southcarolinaparks.com/programs-and-events">Programs &amp; Events</a></li>
+                                            <div role="listitem" class="search-animation"><button type="button" aria-label="Search" class="search-button search-button-desktop"><i class="fa fa-search"></i></button><input type="text" name="search" placeholder="Search here..." aria-label="Search for South Carolina Parks" class="form-control menu-expanded"></div>
+                                        </ul>
+                                        <div id="utility-nav" class="nav navbar-nav">
+                                            <div class="box icon-wrapper">
+                                                <div class="box icons">
+                                                    <div class="box icon"><a href="https://www.facebook.com/SC.State.Parks" target="_blank" rel="noopener"><svg role="img" aria-label="Facebook" class="header-social-icon header-social-icon--facebook"><use href="/scparks/images/icons/facebook.svg#facebook"></use></svg></a></div><div class="box icon"><a href="https://x.com/SC_State_Parks" target="_blank" rel="noopener"><svg role="img" aria-label="Twitter" class="header-social-icon header-social-icon--twitter"><use href="/scparks/images/icons/twitter.svg#twitter"></use></svg></a></div><div class="box icon"><a href="https://www.pinterest.com/scstateparks/" target="_blank" rel="noopener"><svg role="img" aria-label="Pinterest" class="header-social-icon header-social-icon--pinterest"><use href="/scparks/images/icons/pinterest.svg#pinterest"></use></svg></a></div><div class="box icon"><a href="https://www.instagram.com/scstateparks/" target="_blank" rel="noopener"><svg role="img" aria-label="Instagram" class="header-social-icon header-social-icon--instagram"><use href="/scparks/images/icons/instagram.svg#instagram"></use></svg></a></div><div class="box icon"><a href="https://www.youtube.com/user/SCStateParks" target="_blank" rel="noopener"><svg role="img" aria-label="Youtube" class="header-social-icon header-social-icon--youtube"><use href="/scparks/images/icons/youtube.svg#youtube"></use></svg></a></div>
+                                                </div>
+                                                <div class="box share"><a href="#" aria-label="Social Icons Animation" class="shareiconmini"><i aria-hidden="true" class="icono-share"></i></a></div>
+                                            </div>
+                                            <ul class="utility-menu">
+                                                <li class=" utility-menu__item"><a href="https://southcarolinaparks.com/travel-tools">Travel Tools</a></li>
+                                                <li class=" utility-menu__item"><a href="https://pages.discoversouthcarolina.travel/parks-news" target="_blank" rel="noopener">Newsletter</a></li>
+                                                <li class=" utility-menu__item"><a href="https://southcarolinaparks.com/deals">Deals</a></li>
+                                                <li class=" utility-menu__item"><a href="https://reserve.southcarolinaparks.com/" target="_blank" rel="noopener">Reservations</a></li>
+                                                <li class=" utility-menu__item"><a href="https://southcarolinaparks.com/park-passports">Park Passports</a></li>
+                                                <li class=" utility-menu__item"><a href="https://southcarolinaparks.com/gift-cards">Gift Cards</a></li>
+                                                <li class=" utility-menu__item"><a href="https://scparkstore.com/" target="_blank" rel="noopener">Shop</a></li>
+                                                <li class=" utility-menu__item"><a href="https://www.scprt.com/parks/jobs-at-state-parks" target="_blank" rel="noopener">Careers</a></li>
+                                                <li class=" utility-menu__item"><a href="https://southcarolinaparks.com/volunteer">Volunteers</a></li>
+                                            </ul>
+                                            <div role="list" class="utility-menu utility-menu--mobile">
+                                                <li class=" utility-menu__item"><a href="https://southcarolinaparks.com/travel-tools">Travel Tools</a></li>
+                                                <li class=" utility-menu__item"><a href="https://pages.discoversouthcarolina.travel/parks-news" target="_blank" rel="noopener">Newsletter</a></li>
+                                                <li class=" utility-menu__item"><a href="https://southcarolinaparks.com/deals">Deals</a></li>
+                                                <li class=" utility-menu__item"><a href="https://reserve.southcarolinaparks.com/" target="_blank" rel="noopener">Reservations</a></li>
+                                                <li class=" utility-menu__item"><a href="https://southcarolinaparks.com/park-passports">Park Passports</a></li>
+                                                <li class=" utility-menu__item"><a href="https://southcarolinaparks.com/gift-cards">Gift Cards</a></li>
+                                                <li class=" utility-menu__item"><a href="https://scparkstore.com/" target="_blank" rel="noopener">Shop</a></li>
+                                                <li class=" utility-menu__item"><a href="https://www.scprt.com/parks/jobs-at-state-parks" target="_blank" rel="noopener">Careers</a></li>
+                                                <li class=" utility-menu__item"><a href="https://southcarolinaparks.com/volunteer">Volunteers</a></li>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </nav>
+                </div>
+            </div>
+            <div id="park-finder-cta-component" style="display: none;">
+                <div id="park-finder-cta" role="list">
+                    <div class="parks">
+                        <a class="park-finder-cta-park" href="https://southcarolinaparks.com/aiken"><h4>AIKEN STATE PARK</h4></a>
+                        <a class="park-finder-cta-park" href="https://southcarolinaparks.com/andrew-jackson"><h4>ANDREW JACKSON STATE PARK</h4></a>
+                        <a class="park-finder-cta-park" href="https://southcarolinaparks.com/baker-creek"><h4>BAKER CREEK STATE PARK</h4></a>
+                        <a class="park-finder-cta-park" href="https://southcarolinaparks.com/barnwell"><h4>BARNWELL STATE PARK</h4></a>
+                        <a class="park-finder-cta-park" href="https://southcarolinaparks.com/musgrove-mill"><h4>BATTLE OF MUSGROVE MILL STATE HISTORIC SITE</h4></a>
+                        <a class="park-finder-cta-park" href="https://southcarolinaparks.com/rivers-bridge"><h4>BATTLE OF RIVERS BRIDGE STATE HISTORIC SITE</h4></a>
+                        <a class="park-finder-cta-park" href="https://southcarolinaparks.com/black-river"><h4>BLACK RIVER STATE PARK</h4></a>
+                        <a class="park-finder-cta-park" href="https://southcarolinaparks.com/caesars-head"><h4>CAESARS HEAD STATE PARK</h4></a>
+                        <a class="park-finder-cta-park" href="https://southcarolinaparks.com/calhoun-falls"><h4>CALHOUN FALLS STATE PARK</h4></a>
+                        <a class="park-finder-cta-park" href="https://southcarolinaparks.com/charles-towne-landing"><h4>CHARLES TOWNE LANDING STATE HISTORIC SITE</h4></a>
+                        <a class="park-finder-cta-park" href="https://southcarolinaparks.com/cheraw"><h4>CHERAW STATE PARK</h4></a>
+                        <a class="park-finder-cta-park" href="https://southcarolinaparks.com/chester"><h4>CHESTER STATE PARK</h4></a>
+                        <a class="park-finder-cta-park" href="https://southcarolinaparks.com/colleton"><h4>COLLETON STATE PARK</h4></a>
+                        <a class="park-finder-cta-park" href="https://southcarolinaparks.com/colonial-dorchester"><h4>COLONIAL DORCHESTER STATE HISTORIC SITE</h4></a>
+                        <a class="park-finder-cta-park" href="https://southcarolinaparks.com/croft"><h4>CROFT STATE PARK</h4></a>
+                        <a class="park-finder-cta-park" href="https://southcarolinaparks.com/devils-fork"><h4>DEVILS FORK STATE PARK</h4></a>
+                        <a class="park-finder-cta-park" href="https://southcarolinaparks.com/dreher-island"><h4>DREHER ISLAND STATE PARK</h4></a>
+                        <a class="park-finder-cta-park" href="https://southcarolinaparks.com/edisto-beach"><h4>EDISTO BEACH STATE PARK</h4></a>
+                        <a class="park-finder-cta-park" href="https://southcarolinaparks.com/givhans-ferry"><h4>GIVHANS FERRY STATE PARK</h4></a>
+                        <a class="park-finder-cta-park" href="https://southcarolinaparks.com/goodale"><h4>GOODALE STATE PARK</h4></a>
+                        <a class="park-finder-cta-park" href="https://southcarolinaparks.com/h-cooper-black"><h4>H. COOPER BLACK JR. MEMORIAL FIELD TRIAL AND RECREATION AREA</h4></a>
+                        <a class="park-finder-cta-park" href="https://southcarolinaparks.com/hamilton-branch"><h4>HAMILTON BRANCH STATE PARK</h4></a>
+                        <a class="park-finder-cta-park" href="https://southcarolinaparks.com/hampton"><h4>HAMPTON PLANTATION STATE HISTORIC SITE</h4></a>
+                        <a class="park-finder-cta-park" href="https://southcarolinaparks.com/hickory-knob"><h4>HICKORY KNOB STATE RESORT PARK</h4></a>
+                        <a class="park-finder-cta-park" href="https://southcarolinaparks.com/hunting-island"><h4>HUNTING ISLAND STATE PARK</h4></a>
+                        <a class="park-finder-cta-park" href="https://southcarolinaparks.com/huntington-beach"><h4>HUNTINGTON BEACH STATE PARK</h4></a>
+                        <a class="park-finder-cta-park" href="https://southcarolinaparks.com/jones-gap"><h4>JONES GAP STATE PARK</h4></a>
+                        <a class="park-finder-cta-park" href="https://southcarolinaparks.com/keowee-toxaway"><h4>KEOWEE-TOXAWAY STATE PARK</h4></a>
+                        <a class="park-finder-cta-park" href="https://southcarolinaparks.com/kings-mountain"><h4>KINGS MOUNTAIN STATE PARK</h4></a>
+                        <a class="park-finder-cta-park" href="https://southcarolinaparks.com/lake-greenwood"><h4>LAKE GREENWOOD STATE PARK</h4></a>
+                        <a class="park-finder-cta-park" href="https://southcarolinaparks.com/lake-hartwell"><h4>LAKE HARTWELL STATE PARK</h4></a>
+                        <a class="park-finder-cta-park" href="https://southcarolinaparks.com/lake-warren"><h4>LAKE WARREN STATE PARK</h4></a>
+                        <a class="park-finder-cta-park" href="https://southcarolinaparks.com/lake-wateree"><h4>LAKE WATEREE STATE PARK</h4></a>
+                        <a class="park-finder-cta-park" href="https://southcarolinaparks.com/landsford-canal"><h4>LANDSFORD CANAL STATE PARK</h4></a>
+                        <a class="park-finder-cta-park" href="https://southcarolinaparks.com/lee"><h4>LEE STATE PARK</h4></a>
+                        <a class="park-finder-cta-park" href="https://southcarolinaparks.com/little-pee-dee"><h4>LITTLE PEE DEE STATE PARK</h4></a>
+                        <a class="park-finder-cta-park" href="https://southcarolinaparks.com/may-forest"><h4>MAY FOREST STATE PARK</h4></a>
+                        <a class="park-finder-cta-park" href="https://southcarolinaparks.com/myrtle-beach"><h4>MYRTLE BEACH STATE PARK</h4></a>
+                        <a class="park-finder-cta-park" href="https://southcarolinaparks.com/oconee"><h4>OCONEE STATE PARK</h4></a>
+                        <a class="park-finder-cta-park" href="https://southcarolinaparks.com/oconee-station"><h4>OCONEE STATION STATE HISTORIC SITE</h4></a>
+                        <a class="park-finder-cta-park" href="https://southcarolinaparks.com/paris-mountain"><h4>PARIS MOUNTAIN STATE PARK</h4></a>
+                        <a class="park-finder-cta-park" href="https://southcarolinaparks.com/pine-island"><h4>PINE ISLAND STATE PARK</h4></a>
+                        <a class="park-finder-cta-park" href="https://southcarolinaparks.com/poinsett"><h4>POINSETT STATE PARK</h4></a>
+                        <a class="park-finder-cta-park" href="https://southcarolinaparks.com/ramsey-grove"><h4>RAMSEY GROVE STATE PARK</h4></a>
+                        <a class="park-finder-cta-park" href="https://southcarolinaparks.com/redcliffe"><h4>REDCLIFFE PLANTATION STATE HISTORIC SITE</h4></a>
+                        <a class="park-finder-cta-park" href="https://southcarolinaparks.com/rose-hill"><h4>ROSE HILL PLANTATION STATE HISTORIC SITE</h4></a>
+                        <a class="park-finder-cta-park" href="https://southcarolinaparks.com/sadlers-creek"><h4>SADLERS CREEK STATE PARK</h4></a>
+                        <a class="park-finder-cta-park" href="https://southcarolinaparks.com/santee"><h4>SANTEE STATE PARK</h4></a>
+                        <a class="park-finder-cta-park" href="https://southcarolinaparks.com/sesqui"><h4>SESQUICENTENNIAL STATE PARK</h4></a>
+                        <a class="park-finder-cta-park" href="https://southcarolinaparks.com/st-phillips-island"><h4>ST. PHILLIPS ISLAND</h4></a>
+                        <a class="park-finder-cta-park" href="https://southcarolinaparks.com/table-rock"><h4>TABLE ROCK STATE PARK</h4></a>
+                        <a class="park-finder-cta-park" href="https://southcarolinaparks.com/woods-bay"><h4>WOODS BAY STATE PARK</h4></a>
+                    </div>
+                </div>
+            </div>
+        </header>
+        <!-- Account and staff admin menu (sign in/out, edit, admin links). Kept outside the header element
+             so the site's "body header ..." rules don't restyle the Bootstrap dropdowns. -->
+        <div class="sc-account-nav noprint" role="navigation" aria-label="Account Links">
+            <div id="globalNav" class="noprint">
+                <Bootstrap:Menu id="BootstrapMenu" runat="server">
+                </Bootstrap:Menu>
+            </div>
+        </div>
+    </div>
+    <!-- End Header -->
+    <% }
+        else
+        { %>
+    <div class="sc-simple-header">
+        <a href="https://southcarolinaparks.com/"><img src="/scparks/images/south-carolina-parks-logo.png" alt="South Carolina State Parks" /></a>
+    </div>
+    <% } %>
+    <asp:PlaceHolder ID="BesideLogoAdminPH" runat="server"></asp:PlaceHolder>
+
+    <main class="content">
+        <%-- UtilityPage (net/) templates split this master page's rendered HTML on these marker comments
+             (Net/Engine/Core/Template.cs): the lines from LAYOUT through END LAYOUT are replaced by the
+             UtilityPage's own content. Keep each marker on its own line, and keep them inside <main> so the
+             fixed-header offset and paper background still apply to UtilityPage content. --%>
+    <!-- LAYOUT -->
+    <!-- PAGE BODY -->
+    <!-- CONTENT -->
+        <form id="form1" runat="server">
+            <!-- Begin Main Container -->
+            <div class="main-container container" role="main">
+                <asp:Literal ID="SessionMessageLiteral" runat="server"></asp:Literal>
+                <a id="main-content"></a>
+                <Item:FlushPoint id="ShellFlushPoint" runat="server" />
+                <asp:ContentPlaceHolder ID="ContentPlaceHolder1" runat="server">
+                </asp:ContentPlaceHolder>
+            </div>
+            <!-- End Main Container -->
+        </form>
+        <asp:Literal ID="ExtrasLiteral" runat="server"></asp:Literal>
+        <Item:BlurbList ID="MasterBlurbList" runat="server"></Item:BlurbList>
+    <!-- END CONTENT -->
+    <!-- END PAGE BODY -->
+    <!-- END LAYOUT -->
+    </main>
+
+    <!-- Begin Footer (from https://southcarolinaparks.com/) -->
+    <footer>
+        <div class="footer-container">
+            <% if (!PUP.IsMode("e"))
+                { %>
+            <div class="upper-footer">
+                <div class="row logos-row">
+                    <div class="col-xs-12 col-sm-4 col-md-4 col-lg-4 col-xl-4 double-image-column">
+                        <a href="https://southcarolinaparks.com/"><img src="/scparks/images/play.png" alt="Come out and play" class="img-responsive" /></a>
+                        <a href="https://southcarolinaparks.com/"><img src="/scparks/images/sc-parks-check-footer.png" alt="SC Parks Check" class="img-responsive" width="76" height="60" /></a>
+                    </div>
+                    <div class="col-xs-12 col-sm-4 col-md-4 col-lg-4 col-xl-4 footer-social">
+                        <a href="https://www.facebook.com/SC.State.Parks" target="_blank" rel="noopener">
+                            <svg role="img" aria-label="Facebook" class="footer-social-icon footer-social-icon--facebook">
+                                <use href="/scparks/images/icons/facebook.svg#facebook"></use>
+                            </svg>
+                        </a>
+                        <a href="https://x.com/SC_State_Parks" target="_blank" rel="noopener">
+                            <svg role="img" aria-label="Twitter" class="footer-social-icon footer-social-icon--twitter">
+                                <use href="/scparks/images/icons/twitter.svg#twitter"></use>
+                            </svg>
+                        </a>
+                        <a href="https://www.pinterest.com/scstateparks/" target="_blank" rel="noopener">
+                            <svg role="img" aria-label="Pinterest" class="footer-social-icon footer-social-icon--pinterest">
+                                <use href="/scparks/images/icons/pinterest.svg#pinterest"></use>
+                            </svg>
+                        </a>
+                        <a href="https://www.instagram.com/scstateparks/" target="_blank" rel="noopener">
+                            <svg role="img" aria-label="Instagram" class="footer-social-icon footer-social-icon--instagram">
+                                <use href="/scparks/images/icons/instagram.svg#instagram"></use>
+                            </svg>
+                        </a>
+                        <a href="https://www.youtube.com/user/SCStateParks" target="_blank" rel="noopener" aria-label="youtube">
+                            <svg role="img" aria-label="YouTube" class="footer-social-icon footer-social-icon--youtube">
+                                <use href="/scparks/images/icons/youtube.svg#youtube"></use>
+                            </svg>
+                        </a>
+                    </div>
+                    <div class="col-xs-12 col-sm-4 col-md-4 col-lg-4 col-xl-4 sc-logo-column">
+                        <a href="https://discoversouthcarolina.com" target="_blank" rel="noopener"><img src="/scparks/images/discover-south-carolina-logo--brown.png" alt="South Carolina logo" class="img-responsive" /></a>
+                    </div>
+                </div>
+                <div class="row text-row">
+                    <div class="col-xs-12 col-sm-4 col-md-4 col-lg-4 col-xl-4 text-row-left-column">
+                        <div class="text-wrapper">
+                            <h3>South Carolina State Parks</h3>
+                            <a class="footer__link" href="https://pages.discoversouthcarolina.travel/parks-contact" target="_blank" rel="noopener">Contact Us</a>
+                            <a class="footer__link parks-contact" href="https://scmediaroom.com/contact" target="_blank" rel="noopener">Journalists &amp; Influencers</a>
+                        </div>
+                    </div>
+                    <div class="col-xs-12 col-sm-4 col-md-4 col-lg-4 col-xl-4 text-row-middle-column">
+                        <div class="text-wrapper">
+                            <a class="footer__link" href="https://southcarolinaparks.com/faqs">FAQ's</a>
+                            <a class="footer__link" href="https://southcarolinaparks.com/recycling">Recycling</a>
+                            <a class="footer__link" href="https://www.scprt.com/parks/jobs-at-state-parks" target="_blank" rel="noopener">Careers</a>
+                            <a class="footer__link" href="https://southcarolinaparks.com/volunteer">Volunteers</a>
+                            <a class="footer__link" href="https://southcarolinaparks.com/rules-regulations">Rules &amp; Regulations</a>
+                        </div>
+                    </div>
+                    <div class="col-xs-12 col-sm-4 col-md-4 col-lg-4 col-xl-4 text-row-right-column">
+                        <div class="text-wrapper">
+                            <a class="footer__link" href="https://reserve.southcarolinaparks.com/" target="_blank" rel="noopener">Make a Reservation</a>
+                            <a class="footer__link" href="https://www.scprt.com/parks/donate-to-state-parks" target="_blank" rel="noopener">Donate</a>
+                            <a class="footer__link" href="https://www.scprt.com/privacy-policy" target="_blank" rel="noopener">Privacy Policy</a>
+                            <a class="footer__link" href="https://www.scprt.com/accessibility" target="_blank" rel="noopener">Accessibility</a>
+                            <a class="footer__link" href="https://www.scprt.com/legal" target="_blank" rel="noopener">Legal</a>
+                            <a class="footer__link" href="https://southcarolinaparks.com/education-and-history/state-house">South Carolina State House</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="bottom-footer">
+                <div class="row mini-footer-top">
+                    <div class="col-xs-12 col-sm-3 col-md-3 col-lg-3 col-xl-3 newsletter"><a href="https://pages.discoversouthcarolina.travel/parks-news" target="_blank" rel="noopener">Sign up to receive the Newsletter</a></div>
+                    <div class="col-xs-12 col-sm-3 col-md-3 col-lg-3 col-xl-3 discover"><a href="https://discoversouthcarolina.com" target="_blank" rel="noopener">DiscoverSouthCarolina.com</a></div>
+                    <div class="col-xs-12 col-sm-3 col-md-3 col-lg-3 col-xl-3 scprt"><a href="https://www.scprt.com" target="_blank" rel="noopener">SCPRT.com</a></div>
+                    <div class="col-xs-12 col-sm-3 col-md-3 col-lg-3 col-xl-3 alliance"><a href="https://southcarolinaparks.com/beautiful-places-alliance">Beautiful Places Alliance</a></div>
+                </div>
+            </div>
+            <% } %>
+            <!-- Account and staff links (sign in/out, volunteer account, admin tools) by access level -->
+            <uc1:UCMasterPageFooter ID="UCMasterPageFooter1" runat="server"></uc1:UCMasterPageFooter>
+            <div class="footer-copyright-container">
+                <div class="mini-footer-bottom">
+                    Copyright <%= DateTime.Now.Year %>, South Carolina Department of Parks, Recreation &amp; Tourism. All Rights Reserved.
+                </div>
+            </div>
+        </div>
+    </footer>
+    <!-- End Footer -->
+
+    <%-- southcarolinaparks.com's React header/footer bundle (https://southcarolinaparks.com/scripts/common) isn't
+         used: it re-renders the header (removing the merged BootstrapMenu) and calls /api/menu/ on this host, so
+         header.js reproduces just the behaviors the static header needs. --%>
+    <script src="<%= VersionedUrl("/scparks/scripts/header.js") %>"></script>
+    <script>
+        // BootstrapMenu's person/gear icons need a dropdown plugin. BootstrapMenu.ascx.cs includes
+        // /core/js/bootstrap-dropdown.js for most sites but not for the GeorgiaDNR group (Version 2), whose
+        // Parks master loads Bootstrap 3 instead. Load it here only when no dropdown plugin is present, since
+        // loading two would toggle each menu open and closed on the same click.
+        if (window.jQuery && !jQuery.fn.dropdown) {
+            document.write('<script src="/core/js/bootstrap-dropdown.js"><\/script>');
+        }
+    </script>
+
+    <script type="text/javascript">
+<!--
+    $(function () {
+     <% // See if a template page (UtilityPage) is loaded. If so, move the skip content link target and masterMessageArea span,
+        // if present, from the asp.net generated aspnetForm to just before the page form. %>
+        var $divRoleMain = $('div[role="main"]');
+        if ($divRoleMain.length == 2) {
+            $divRoleMain.each(function (index, element) {
+                var $this = $(this);
+                if ($this.closest('#aspnetForm').length == 1) {
+                    var targetIndex = index == 0 ? 1 : 0;
+                    var $target = $($divRoleMain[targetIndex]);
+                    if ($target.find('#main-content').length == 0) {
+                        $this.find('#main-content').prependTo($target);
+                    }
+                    if ($target.find('span.masterMessageArea').length == 0) {
+                        $this.find('span.masterMessageArea').prependTo($target);
+                    }
+                    $this.removeAttr("role");
+                }
+            });
+        }
+    });
+
+    function loadUserAccessCustom(userState) { // Called by /core/item/scripts/util.js
+        if ($("div.sideMenuColumn").length > 0) {
+            var relationAccess = Math.max(userState.relationAccess, userState.partnerAccess);
+            if ((userState.userAccess >= 4 || relationAccess >= 4) && itemID > 0) {
+                // Override the masterpage styles for the edit menu
+                $(".main-container.container").css({
+                    "margin-left": "0px",
+                    "margin-right": "0px",
+                    "padding-right": "0px",
+                    "padding-left": "0px",
+                    "width": "auto"
+                });
+            }
+        }
+    }
+//-->
+    </script>
+</body>
+</html>
